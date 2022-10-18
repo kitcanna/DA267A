@@ -109,8 +109,7 @@ void show_level(int level) {
         vTaskDelay(pdMS_TO_TICKS(500));
 }
 
-void app_main() {
-
+void initTravelNeeds () {
     //Initialize travel needs (50 randomly generated travel needs)
     travel_needs[0].origin = 2; travel_needs[0].destination = 1;
     travel_needs[1].origin = 1; travel_needs[1].destination = 2;
@@ -162,6 +161,11 @@ void app_main() {
     travel_needs[47].origin = 2; travel_needs[47].destination = 1;
     travel_needs[48].origin = 0; travel_needs[48].destination = 2;
     travel_needs[49].origin = 1; travel_needs[49].destination = 0;
+}
+
+void app_main() {
+
+    initTravelNeeds();
 
     //INIT THE BUFFER
     int *data = (int *)malloc(BUFFER_SIZE * sizeof(int));
