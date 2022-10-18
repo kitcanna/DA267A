@@ -1,0 +1,128 @@
+#include "I2C.h"
+#include "circular_buffer.h"
+
+#include "inttypes.h"
+#include "math.h"
+
+#include <esp_task_wdt.h>
+#include <esp_pm.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <limits.h>
+
+/////////////  DEFINITIONS /////////////
+/*
+ * The reason I have chosen this sampling frequency is because....
+ */ 
+#define SAMPLING_PERIOD 500
+
+/*
+ * The reason I have chosen this buffer size is because....
+ */ 
+#define BUFF_SIZE 10
+
+/*
+ * I have chosen to run the algorithm every YYY because....
+ */ 
+#define ALGO_PERIOD 
+
+/*
+ * Minimum SD to avoid converging to 0
+ */ 
+#define MIN_SD ???
+
+/*
+ * Constant applied to SD to detect steps
+ */ 
+#define K ???
+
+/*
+ * Minimum time between steps, this value is chosen because...
+ */ 
+#define MIN_INTRA_STEP_TIME ???
+
+/*
+ * Daily goal of steps
+ */ 
+#define STEPS_GOAL 10
+
+#define LED_PIN 26
+#define BUTTON_PIN 14 
+#define SCL_PIN 22
+#define SDA_PIN 21
+///////////////////////////////////////
+
+
+
+
+/////////////  INITIATIONS /////////////
+struct circular_buffer circularBuffer;
+int step_count = 0;
+SemaphoreHandle_t xSemaphore = NULL;
+
+///////////////////////////////////////
+
+
+
+
+/////////////  SAMPLING TASK /////////////
+static void sampling_task(void *arg) {
+  TickType_t xLastWakeTime = xTaskGetTickCount();
+
+  while (1) {
+     // get the acceleration
+     // compute the magnitude
+     // place the magnitude into the buffer
+     // print the content of the magnitude
+     vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(SAMPLING_PERIOD));
+
+ }
+}
+///////////////////////////////////////
+
+
+
+
+/////////////  ALGO TASK /////////////
+static void algo_task(void *arg) {
+    TickType_t xLastWakeTime = xTaskGetTickCount();
+    
+        while (1) {
+            // get size of the buffer
+
+            if (size > 0) {
+                // compute mean, here do NOT empty the queue when reading it!
+                // compute SD, here queue must not be emptied yet
+                
+                if (sd < MIN_SD) sd = MIN_SD;
+                
+                // now do the step counting, while also emptying the queue
+                
+                int lastStepTS = -MIN_INTRA_STEP_TIME;
+                
+                for (int i = 0; i < size; i++) {
+                    // get sample, removing it from queue
+                    // if sample > mean + K * sd
+                    // AND if time between last step and this sample is >
+                    MIN_INTRA_STEP_TIME
+                    // step found! step_count++;
+                }
+            }
+            vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(ALGO_PERIOD));
+        }
+}
+///////////////////////////////////////
+
+
+
+
+/////////////  MAIN /////////////
+void app_main() {
+ // initialise the I2C bus and the MPU6050
+
+ while(1) {
+    // get acceleration
+    // print acceleration
+    vTaskDelay(pdMS_TO_TICKS(500));
+ }
+ ///////////////////////////////////////

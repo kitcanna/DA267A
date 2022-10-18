@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "sampler.h": "c",
+        "*.ipp": "c"
+    }
+}
