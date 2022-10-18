@@ -45,19 +45,14 @@ static void handle_push(void *arg) {
 
     // If enough time passed, we should consider this event as a genuine push
     if ((now - lastPush) > PUSH_TIME_US) {
-       
+        
+        //SET LAST PUSH TO CURRENT TIMER 
         lastPush = now;
 
-        //Get next travel need from list and do something with it
-        //struct travel_need current_travel_need = travel_needs[travel_need_counter];
-
+        //ADD TRAVEL TO BUFFER
         addElement(&buffer, travel_need_counter);
 
-        //Now we are just blinking the LEDs. You need to update this code.
-        //uint32_t level = travel_need_counter % 4;
-
-        //Increase travel need counter
-        //travel_need_counter = (travel_need_counter + 1)% 50;
+        //INCREASE TRAVEL COUNTER
         travel_need_counter++;
 
     } 
@@ -70,22 +65,48 @@ void show_level(int level) {
         gpio_set_level(LED_PIN_LEVEL_UP, 0);
         gpio_set_level(LED_PIN_LEVEL_MIDDLE, 0);
         gpio_set_level(LED_PIN_LEVEL_DOWN, 0);
+        vTaskDelay(pdMS_TO_TICKS(500));
 
-        vTaskDelay(pdMS_TO_TICKS(1000));
-
+        //FIRST FLOOR
         if (level == 0) {
+            gpio_set_level(LED_PIN_LEVEL_DOWN, 1); 
+            vTaskDelay(pdMS_TO_TICKS(100));
+            gpio_set_level(LED_PIN_LEVEL_DOWN, 0);
+            vTaskDelay(pdMS_TO_TICKS(100));
+            gpio_set_level(LED_PIN_LEVEL_DOWN, 1); 
+            vTaskDelay(pdMS_TO_TICKS(100));
+            gpio_set_level(LED_PIN_LEVEL_DOWN, 0);
+            vTaskDelay(pdMS_TO_TICKS(100));
             gpio_set_level(LED_PIN_LEVEL_DOWN, 1); 
         } 
 
+        //SECOND FLOOR
         else if (level == 1) {
+            gpio_set_level(LED_PIN_LEVEL_MIDDLE, 1);
+            vTaskDelay(pdMS_TO_TICKS(100));
+            gpio_set_level(LED_PIN_LEVEL_MIDDLE, 0);
+            vTaskDelay(pdMS_TO_TICKS(100));
+            gpio_set_level(LED_PIN_LEVEL_MIDDLE, 1);
+            vTaskDelay(pdMS_TO_TICKS(100));
+            gpio_set_level(LED_PIN_LEVEL_MIDDLE, 0);
+            vTaskDelay(pdMS_TO_TICKS(100));
             gpio_set_level(LED_PIN_LEVEL_MIDDLE, 1);
         }
         
+        //THIRD FLOOR
         else {
             gpio_set_level(LED_PIN_LEVEL_UP, 1);
+            vTaskDelay(pdMS_TO_TICKS(100));
+            gpio_set_level(LED_PIN_LEVEL_UP, 0);
+            vTaskDelay(pdMS_TO_TICKS(100));
+            gpio_set_level(LED_PIN_LEVEL_UP, 1);
+            vTaskDelay(pdMS_TO_TICKS(100));
+            gpio_set_level(LED_PIN_LEVEL_UP, 0);
+            vTaskDelay(pdMS_TO_TICKS(100));
+            gpio_set_level(LED_PIN_LEVEL_UP, 1);
         }
-        vTaskDelay(pdMS_TO_TICKS(1000));
 
+        vTaskDelay(pdMS_TO_TICKS(500));
 }
 
 void app_main() {
@@ -142,6 +163,9 @@ void app_main() {
     travel_needs[48].origin = 0; travel_needs[48].destination = 2;
     travel_needs[49].origin = 1; travel_needs[49].destination = 0;
 
+    //INIT THE BUFFER
+    int *data = (int *)malloc(BUFFER_SIZE * sizeof(int));
+    initCircularBuffer(&buffer, data, BUFFER_SIZE);
 
     gpio_config_t config; 
 
@@ -160,7 +184,6 @@ void app_main() {
     config.pin_bit_mask = (u_int64_t)1 << LED_PIN_LEVEL_DOWN;
     gpio_config(&config);
 
-
     // Configure pin BUTTON_PIN as input, pull up and with interrupts on the negative edge
     config.pin_bit_mask = (u_int64_t)1 << BUTTON_PIN;
     config.mode = GPIO_MODE_INPUT;
@@ -177,37 +200,31 @@ void app_main() {
     res = gpio_isr_handler_add(BUTTON_PIN, handle_push, NULL);
     ESP_ERROR_CHECK(res);
 
-    /**
-     * Init buffer
-     */ 
-    int *data = (int *)malloc(BUFFER_SIZE * sizeof(int));
-    initCircularBuffer(&buffer, data, BUFFER_SIZE);
-
     int current_floor = 0; 
-    struct travel_need current_travel_need; 
+    struct travel_need current_travel; 
     int temp = INT_MIN; 
 
     // This is where you most likely put your main elevator code. 
     while(1) {
+        //REMOVE THE HEAD AND COLLECT IT
         temp = removeHead(&buffer);
 
         if (temp != INT_MIN) {
-            current_travel_need = travel_needs[temp];
 
-            if (current_travel_need.origin != current_floor){
-                show_level(current_travel_need.origin);
-                //printf("Going to origin...");
-            }
-            show_level(current_travel_need.destination);
-            //printf("Going to destination...");
+            //GET THE DATA FOR THE CURRENT TRAVEL
+            current_travel = travel_needs[temp];
 
-            current_floor = current_travel_need.destination;
+            printf("Going to origin: %d\n", current_travel.origin);
+            show_level(current_travel.origin);
+
+            vTaskDelay(pdMS_TO_TICKS(100));
+
+            printf("Going to destination: %d\n", current_travel.destination);
+            show_level(current_travel.destination);
+
+            current_floor = current_travel.destination;
         }
-        vTaskDelay(pdMS_TO_TICKS(500));
+        vTaskDelay(pdMS_TO_TICKS(1000));
     }
 
-      
-      
-    
-       
 }
