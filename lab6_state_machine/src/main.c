@@ -1,7 +1,7 @@
-#include <stdio.h>
-#include <stdlib.h>
 #include <esp32/rom/ets_sys.h>
 #include <esp_task_wdt.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 #include "driver/gpio.h"
 #include "circular_buffer.h"
@@ -35,7 +35,7 @@ static volatile struct travel_need travel_needs[50];
 /**
  * This function is called when button is pushed
  */
-static void handle_push(void *arg) {
+static void button_handler(void *arg) {
 
     // Disable interrupts
     gpio_intr_disable(BUTTON_PIN);
@@ -46,7 +46,7 @@ static void handle_push(void *arg) {
     // If enough time passed, we should consider this event as a genuine push
     if ((now - lastPush) > PUSH_TIME_US) {
         
-        //SET LAST PUSH TO CURRENT TIMER 
+        //SET TIME OF LAST PUSH TO CURRENT TIMER 
         lastPush = now;
 
         //ADD TRAVEL TO BUFFER
@@ -108,7 +108,7 @@ void show_level(int level) {
 
         vTaskDelay(pdMS_TO_TICKS(500));
 }
-
+   
 void initTravelNeeds () {
     //Initialize travel needs (50 randomly generated travel needs)
     travel_needs[0].origin = 2; travel_needs[0].destination = 1;
@@ -201,7 +201,7 @@ void app_main() {
     ESP_ERROR_CHECK(res);
 
     // Add a handler to the ISR for pin BUTTON_PIN
-    res = gpio_isr_handler_add(BUTTON_PIN, handle_push, NULL);
+    res = gpio_isr_handler_add(BUTTON_PIN, button_handler, NULL);
     ESP_ERROR_CHECK(res);
 
     int current_floor = 0; 
@@ -226,6 +226,7 @@ void app_main() {
             printf("Going to destination: %d\n", current_travel.destination);
             show_level(current_travel.destination);
 
+            //SET NEW DESTINATION AS "ORIGIN"
             current_floor = current_travel.destination;
         }
         vTaskDelay(pdMS_TO_TICKS(1000));
