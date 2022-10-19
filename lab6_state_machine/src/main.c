@@ -206,17 +206,17 @@ void app_main() {
 
     int current_floor = 0; 
     struct travel_need current_travel; 
-    int temp = INT_MIN; 
+    int current_data = INT_MIN; 
 
     // This is where you most likely put your main elevator code. 
     while(1) {
         //REMOVE THE HEAD AND COLLECT IT
-        temp = removeHead(&buffer);
+        current_data = removeHead(&buffer);
 
-        if (temp != INT_MIN) {
+        if (current_data != INT_MIN) {
 
             //GET THE DATA FOR THE CURRENT TRAVEL
-            current_travel = travel_needs[temp];
+            current_travel = travel_needs[current_data];
 
             printf("Going to origin: %d\n", current_travel.origin);
             show_level(current_travel.origin);
